@@ -12,11 +12,23 @@ process.on('unhandledRejection', err => {
   }
 })
 
+if (process.env.NODE_ENV === 'development') {
+  const dotenv = require('dotenv')
+  dotenv.config({ path: './config.env' })
+}
+
+const mongoose = require('mongoose')
 const app = require('./app')
 
 let server
 const port = process.env.PORT
 
-server = app.listen(port, () =>
-  log(`✅  Web Server Running on Port ${port}...`)
-)
+;(async () => {
+  await mongoose.connect(process.env.MONGODB_CONNECT_STRING, {
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useFindAndModify: false
+  })
+  log('✅ DB connection successful')
+  server = app.listen(port, () => log(`✅ Server Running on Port ${port}...`))
+})().catch(logError)

@@ -1,0 +1,16 @@
+* Tour * 
+{
+  id: ID,
+  name: String,
+  duration: Int, 
+  maxGroupSize: Int,
+  difficulty: String,
+  ratingsAverage: Float,
+  ratingsQuantity: Int,
+  price: Float,
+  summary: String,
+  description: String,
+  imageCover: String,
+  images: [String],
+  startDates: [Date]
+}
