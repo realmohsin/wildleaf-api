@@ -4,10 +4,13 @@
   "author": "Real Mohsin",
   "description": "wildleaf-api",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "cross-env PORT=3000 node server.js",
+    "develop": "cross-env PORT=3000 nodemon server.js"
   },
   "dependencies": {
-    "chalk": "3.0.0"
+    "chalk": "3.0.0",
+    "express": "4.17.1",
+    "morgan": "1.9.1"
   },
   "devDependencies": {
     "cross-env": "7.0.2",
