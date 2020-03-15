@@ -5,5 +5,12 @@
   "description": "wildleaf-api",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "chalk": "3.0.0"
+  },
+  "devDependencies": {
+    "cross-env": "7.0.2",
+    "nodemon": "2.0.2"
   }
 }
