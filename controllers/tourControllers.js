@@ -53,8 +53,9 @@ const deleteTour = withCatch(async (req, res) => {
 })
 
 const getTourStats = withCatch(async (req, res) => {
-  const pipeline = Tour.aggregate(tourStatsPipeline())
+  const pipeline = await Tour.aggregate(tourStatsPipeline())
   const stats = await pipeline
+  console.log(pipeline)
   sendSuccessRes(res, 200, { stats })
 })
 

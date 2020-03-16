@@ -6,7 +6,7 @@ const tourStatsPipeline = () => [
   },
   {
     $group: {
-      _id: '$difficulty',
+      _id: { $toUpper: '$difficulty' },
       numOfTours: { $sum: 1 },
       numOfRatings: { $sum: '$ratingsQuantity' },
       avgRating: { $avg: '$ratingsAverage' },
