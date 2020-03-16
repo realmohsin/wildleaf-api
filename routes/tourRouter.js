@@ -1,7 +1,7 @@
 const express = require('express')
 const {
   queryTours,
-  addTour,
+  createTour,
   getTour,
   updateTour,
   deleteTour,
@@ -14,14 +14,14 @@ const tourRouter = express.Router()
 
 // order matters for routes
 
-// custom
+// custom routes
 tourRouter.get('/tours/top-5-cheap', setTop5Cheapest, queryTours)
 tourRouter.get('/tours/tour-stats', getTourStats)
 tourRouter.get('/tours/monthly-tour-starts/:year', getMonthlyTourStarts)
 
-// crud
+// REST routes
 tourRouter.get('/tours', queryTours)
-tourRouter.post('/tours', addTour)
+tourRouter.post('/tours', createTour)
 tourRouter.get('/tours/:id', getTour)
 tourRouter.patch('/tours/:id', updateTour)
 tourRouter.delete('/tours/:id', deleteTour)
