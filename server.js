@@ -17,18 +17,13 @@ if (process.env.NODE_ENV === 'development') {
   dotenv.config({ path: './config.env' })
 }
 
-const mongoose = require('mongoose')
+const db = require('./database')
 const app = require('./app')
 
 let server
 const port = process.env.PORT
 
 ;(async () => {
-  await mongoose.connect(process.env.MONGODB_CONNECT_STRING, {
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useFindAndModify: false
-  })
-  log('✅ DB connection successful')
+  await db.connect(process.env.MONGODB_CONNECT_STRING)
   server = app.listen(port, () => log(`✅ Server Running on Port ${port}...`))
 })().catch(logError)
