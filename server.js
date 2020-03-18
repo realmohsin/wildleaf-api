@@ -17,6 +17,10 @@ if (process.env.NODE_ENV === 'development') {
   dotenv.config({ path: './config.env' })
 }
 
+// //test production mode
+// const dotenv = require('dotenv')
+// dotenv.config({ path: './config.env' })
+
 const db = require('./database')
 const app = require('./app')
 

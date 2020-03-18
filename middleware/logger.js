@@ -3,8 +3,10 @@ const chalk = require('chalk')
 
 const logger = morgan((tokens, req, res) => {
   const applyBlueBold = chalk.hex('#1e90ff').bold
-  const applySuccessColor = chalk.bgHex('#fff').green
-  const applyFailColor = chalk.bgHex('#fff').red
+  // const applySuccessColor = chalk.bgHex('#fff').green
+  const applySuccessColor = chalk.green
+  // const applyFailColor = chalk.bgHex('#fff').red
+  const applyFailColor = chalk.red
 
   const method = applyBlueBold(tokens.method(req, res))
   const url = applyBlueBold(tokens.url(req, res))

@@ -5,6 +5,22 @@ const jSend = {
       status: 'success',
       data
     })
+  },
+  fail (res, statusCode, message, data) {
+    const jsonRes = {
+      status: 'fail',
+      message
+    }
+    if (data) jsonRes.data = data
+    res.status(statusCode).json(jsonRes)
+  },
+  error (res, statusCode, message, data) {
+    const jsonRes = {
+      status: 'error',
+      message
+    }
+    if (data) jsonRes.data = data
+    res.status(statusCode).json(jsonRes)
   }
 }
 
