@@ -5,31 +5,31 @@ const jSend = require('../utils/jSend')
 const AppError = require('../utils/AppError')
 const sendEmail = require('../email/sendEmail')
 const filterReqBody = require('../utils/filterReqBody')
-const addSessionCookie = require('../utils/addSessionCookie')
+const { addSessionCookie, clearSessionCookie } = require('../utils/cookieUtils')
 
 const handleSignUp = withCatch(async (req, res, next) => {
-  await User.clearIncomingSession(req)
   const filteredData = filterReqBody(req.body, ...User.fieldsForUserCreate)
   const newUser = await User.create(filteredData)
+  await User.deleteIncomingSession(req)
   const token = await newUser.createSession()
   addSessionCookie(res, token)
   jSend.success(res, 201, { message: 'New account created.', user: newUser })
 })
 
 const handleLogIn = withCatch(async (req, res, next) => {
-  await User.clearIncomingSession(req)
   const { email, password } = filterReqBody(req.body, 'email', 'password')
   if (!email || !password)
     throw new AppError('Email or password not provided', 400)
   const user = await User.findByCredentials(email, password)
+  await User.deleteIncomingSession(req)
   const token = await user.createSession()
   addSessionCookie(res, token)
   jSend.success(res, 200, { message: 'Successfully logged in.' })
 })
 
 const handleLogOut = withCatch(async (req, res, next) => {
-  await req.user.clearSession(req.session.token)
-  res.clearCookie('sessionToken') // built in express method
+  await req.user.deleteSession(req.session.token)
+  clearSessionCookie(res)
   jSend.success(res, 200, { message: 'Successfully logged out.' })
 })
 

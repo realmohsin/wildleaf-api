@@ -14,6 +14,8 @@ const {
   deleteSelf
 } = require('../controllers/userController')
 
+// routes that use authController and/or userController
+
 const userRouter = express.Router()
 
 // auth routes

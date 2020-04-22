@@ -5,6 +5,8 @@ const { log } = require('../utils/consoleLog')
 const AppError = require('../utils/AppError')
 const withCatch = require('../utils/withCatch')
 
+// do not have to check if cookie is expired, since the cookie would have been deleted by browser and never sent
+
 const isAuth = withCatch(async (req, res, next) => {
   const token = req.cookies.sessionToken
   if (!token) throw new AppError('Not authenticated', 401)

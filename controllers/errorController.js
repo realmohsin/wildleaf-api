@@ -27,6 +27,7 @@ const handleProdError = (res, err) => {
   }
 }
 
+// check for errors from packages that we can consider as AppErrors
 const checkForAppError = err => {
   if (err.name === 'JsonWebTokenError') {
     return new AppError('Invalid token. Please authenticate again.', 401)

@@ -10,4 +10,8 @@ const addSessionCookie = (res, token) => {
   res.cookie('sessionToken', token, cookieOptions)
 }
 
-module.exports = addSessionCookie
+const clearSessionCookie = res => {
+  res.clearCookie('sessionToken')
+}
+
+module.exports = { addSessionCookie, clearSessionCookie }

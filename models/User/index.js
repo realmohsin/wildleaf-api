@@ -25,6 +25,8 @@ const userSchema = new mongoose.Schema(
   }
 )
 
+// Class Static Properties and Methods
+
 userSchema.statics.fieldsForUserCreate = ['email', 'password', 'name', 'photo']
 
 userSchema.statics.findByCredentials = async (email, password) => {
@@ -35,9 +37,8 @@ userSchema.statics.findByCredentials = async (email, password) => {
   return user
 }
 
-userSchema.statics.clearIncomingSession = async req => {
+userSchema.statics.deleteIncomingSession = async req => {
   const token = req.cookies.sessionToken
-  console.log('from clearInc', token)
   if (!token) return
   try {
     const decodedToken = await promisify(jwt.verify)(
@@ -45,11 +46,13 @@ userSchema.statics.clearIncomingSession = async req => {
       process.env.JWT_SECRET
     )
     const user = await User.findById(decodedToken._id)
-    await user.clearSession(token)
+    await user.deleteSession(token)
   } catch (error) {
     return
   }
 }
+
+// Instance Methods
 
 userSchema.methods.createSession = async function () {
   const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET, {
@@ -61,16 +64,16 @@ userSchema.methods.createSession = async function () {
   return token
 }
 
-userSchema.methods.clearSession = async function (token) {
+userSchema.methods.deleteSession = async function (token) {
   this.sessions = this.sessions.filter(session => session.token !== token)
   await this.save()
 }
 
+// decide when to perform this
 userSchema.methods.clearExpiredSessions = async function () {
   this.sessions = this.sessions.filter(session => {
     const { exp } = jwt.decode(session.token)
-    if (Date.now() >= exp) return false
-    return true
+    return Date.now() < exp
   })
   await this.save()
 }
@@ -85,6 +88,8 @@ userSchema.methods.changedPasswordAfter = function (thisTimestamp) {
   }
   return false
 }
+
+// Middleware
 
 userSchema.pre('save', async function (next) {
   if (this.isModified('password')) {
