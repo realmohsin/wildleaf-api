@@ -9,8 +9,8 @@ const log = (...inputs) => {
         if (typeof item === 'object') {
           item = JSON.stringify(item, null, 2)
         }
-        // return chalk.bgHex('#fff').green(item)
-        return chalk.green(item)
+        return chalk.bgHex('#fff').green(item)
+        // return chalk.green(item)
       })
       .join('')
   )

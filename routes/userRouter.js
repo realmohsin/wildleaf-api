@@ -5,7 +5,7 @@ const {
   handleLogIn,
   handleLogOut,
   updatePassword,
-  sendNewPasswordEmail,
+  sendPasswordResetEmail,
   resetPassword
 } = require('../controllers/authController')
 const {
@@ -25,8 +25,8 @@ userRouter.post('/users/logout', isAuth, handleLogOut)
 
 userRouter.patch('/users/update-password', isAuth, updatePassword)
 
-userRouter.post('/users/request-password-change', sendNewPasswordEmail)
-userRouter.patch('/users/reset-password/:resetToken', resetPassword)
+userRouter.post('/users/request-password-reset', sendPasswordResetEmail)
+userRouter.patch('/users/reset-password/:passwordResetToken', resetPassword)
 
 userRouter.patch('/users/update-self', isAuth, updateSelf)
 userRouter.delete('/users/delete-self', isAuth, deleteSelf)

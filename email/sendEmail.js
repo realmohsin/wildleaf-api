@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer')
 
-const sendEmail = async options => {
+const sendEmail = async email => {
   // 1) create a transporter
   const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
@@ -10,17 +10,18 @@ const sendEmail = async options => {
       pass: process.env.EMAIL_PASSWORD
     }
     // activate in gmail 'less secure app' option
+    // gmail is not good for production, has outgoing email limits
   })
   // 2) Define the email options
-  const mailOptions = {
-    from: 'Real Mohsin <hello@mohsin.io>',
-    to: options.email,
-    subject: options.subject,
-    text: options.message
-    // html:
-  }
+  // const formattedEmail = {
+  //   from: 'Real Mohsin <hello@mohsin.io>',
+  //   to: email.to,
+  //   subject: email.subject,
+  //   text: email.message
+  //   // html:
+  // }
   // 3) Send the email
-  await transporter.sendMail(mailOptions)
+  await transporter.sendMail(email)
 }
 
 module.exports = sendEmail

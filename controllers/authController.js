@@ -6,6 +6,8 @@ const AppError = require('../utils/AppError')
 const sendEmail = require('../email/sendEmail')
 const filterReqBody = require('../utils/filterReqBody')
 const { addSessionCookie, clearSessionCookie } = require('../utils/cookieUtils')
+const createEmail = require('../email/createEmail')
+const { logError } = require('../utils/consoleLog')
 
 const handleSignUp = withCatch(async (req, res, next) => {
   const filteredData = filterReqBody(req.body, ...User.fieldsForUserCreate)
@@ -54,73 +56,36 @@ const updatePassword = withCatch(async (req, res, next) => {
   jSend.success(res, 200, { token })
 })
 
-// for setting new password without prior password
-const sendNewPasswordEmail = withCatch(async (req, res, next) => {
-  console.log('from sendNewPasswordEmail')
-
-  // 1) get user based on POSTed email
+const sendPasswordResetEmail = withCatch(async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email })
-  if (!user) {
-    return next(new AppError('There is no user with that email.', 404))
-  }
-
-  // 2) Generate random reset token
-  const resetToken = user.createPasswordResetToken() // maybe move saving to inside this
-  await user.save({ validateBeforeSave: false }) // turn off validation
-
-  // 3) Send to user's email
-  const resetURL = `${req.protocol}://${req.get(
+  if (!user) return next(new AppError('No user with that email.', 404))
+  const passwordResetToken = await user.createPasswordResetToken()
+  const passwordResetURL = `${req.protocol}://${req.get(
     'host'
-  )}/api/v1/users/reset-password/${resetToken}`
-
-  const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to ${resetURL}.\nIf you didn't forget your password, please ignore this email!`
-
+  )}/api/v1/users/reset-password/${passwordResetToken}`
   try {
-    await sendEmail({
-      email: user.email,
-      subject: 'Your password reset token (valid for 10min)',
-      message
+    const email = createEmail(user.email, 'password-reset', {
+      passwordResetURL
     })
-    jSend.success(res, 200, { message: 'Password reset token sent to email.' })
+    await sendEmail(email)
+    jSend.success(res, 200, { message: 'Password reset email sent.' })
   } catch (error) {
-    user.passwordResetToken = undefined
-    user.passwordResetExpires = undefined
-    await user.save({ validateBeforeSave: false })
-
-    return next(
-      new AppError(
-        'There was an error sending the email. Try again later.',
-        500
-      )
-    )
+    await user.clearPasswordResetToken()
+    logError(error)
+    const appErrMsg = 'There was an error sending the email. Try again later.'
+    next(new AppError(appErrMsg, 500))
   }
 })
 
-// for setting new password without prior password
 const resetPassword = withCatch(async (req, res, next) => {
-  // 1) Get user based on token.
-  const hashedToken = crypto
-    .createHash('sha256')
-    .update(req.params.resetToken)
-    .digest('hex')
-  const user = await User.findOne({
-    passwordResetToken: hashedToken,
-    passwordResetExpires: { $gt: Date.now() }
-  })
-
-  // 2) If token has not expired, and there is user, set new password
-  if (!user) {
-    return next(new AppError('Token is invalid or has expired', 400))
-  }
+  const passwordResetToken = req.params.passwordResetToken
+  const user = await User.findByPasswordResetToken(passwordResetToken)
   user.password = req.body.password
-  user.passwordConfirm = req.body.passwordConfirm
-  user.passwordResetToken = undefined
-  user.passwordResetExpires = undefined
-  await user.save() // keep validation on
-  // 3) Update changedPasswordAt property for the user
-  // 4) Log the user in, send JWT
-  const token = signToken(user._id)
-  jSend.success(res, 200, { token })
+  await user.clearPasswordResetToken() // will save the password change as well
+  await User.deleteIncomingSession(req)
+  const token = await user.createSession()
+  addSessionCookie(res, token)
+  jSend.success(res, 200, { message: 'Password was reset and changed.' })
 })
 
 module.exports = {
@@ -128,6 +93,6 @@ module.exports = {
   handleLogIn,
   handleLogOut,
   updatePassword,
-  sendNewPasswordEmail,
+  sendPasswordResetEmail,
   resetPassword
 }

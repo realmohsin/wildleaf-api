@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema(
   }
 )
 
-// Class Static Properties and Methods
+// ----------- Class Static Properties and Methods -----------------------
 
 userSchema.statics.fieldsForUserCreate = ['email', 'password', 'name', 'photo']
 
@@ -34,6 +34,21 @@ userSchema.statics.findByCredentials = async (email, password) => {
   if (!user) throw new AppError('Incorrect email or password')
   const passwordIsCorrect = await bcrypt.compare(password, user.password)
   if (!passwordIsCorrect) throw new AppError('Incorrect email or password', 401)
+  return user
+}
+
+userSchema.statics.findByPasswordResetToken = async passwordResetToken => {
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(passwordResetToken)
+    .digest('hex')
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() }
+  })
+  if (!user) {
+    throw new AppError('Token is invalid or has expired', 400)
+  }
   return user
 }
 
@@ -52,20 +67,25 @@ userSchema.statics.deleteIncomingSession = async req => {
   }
 }
 
-// Instance Methods
+// --------------- Instance Methods ------------------------------
 
 userSchema.methods.createSession = async function () {
   const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN
   })
   log(jwt.decode(token))
-  this.sessions = this.sessions.concat({ token })
+  this.sessions.push({ token })
   await this.save()
   return token
 }
 
 userSchema.methods.deleteSession = async function (token) {
-  this.sessions = this.sessions.filter(session => session.token !== token)
+  this.sessions.forEach(session => {
+    if (session.token === token) {
+      this.sessions.pull({ _id: session._id })
+    }
+  })
+  // this.sessions = this.sessions.filter(session => session.token !== token)
   await this.save()
 }
 
@@ -89,7 +109,24 @@ userSchema.methods.changedPasswordAfter = function (thisTimestamp) {
   return false
 }
 
-// Middleware
+userSchema.methods.createPasswordResetToken = async function () {
+  const resetToken = crypto.randomBytes(32).toString('hex')
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex')
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000 // 10min
+  await this.save()
+  return resetToken
+}
+
+userSchema.methods.clearPasswordResetToken = async function () {
+  this.passwordResetToken = undefined
+  this.passwordResetExpires = undefined
+  await this.save()
+}
+
+// --------------- Middleware ------------------------------
 
 userSchema.pre('save', async function (next) {
   if (this.isModified('password')) {
@@ -107,21 +144,6 @@ userSchema.pre('save', async function (next) {
 //   this.find({ active: { $ne: false } })
 //   next()
 // })
-
-// userSchema.methods.correctPassword = async function (attemptedPw, pw) {
-//   return await bcrypt.compare(attemptedPw, pw)
-// }
-
-// userSchema.methods.createPasswordResetToken = function () {
-//   const resetToken = crypto.randomBytes(32).toString('hex')
-//   this.passwordResetToken = crypto
-//     .createHash('sha256')
-//     .update(resetToken)
-//     .digest('hex')
-//   this.passwordResetExpires = Date.now() + 10 * 60 * 1000 // 10min
-//   return resetToken
-//   // values updated in instance, but not saved to db yet
-// }
 
 // For future refactor
 // setPasswordResetToken

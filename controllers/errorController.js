@@ -4,7 +4,7 @@ const jSend = require('../utils/jSend')
 
 const handleDevError = (res, err) => {
   logError(err)
-  const { statusCode, status, message, stack } = err
+  const { statusCode = 500, status = 'error', message, stack } = err
   if (status === 'fail') {
     jSend.fail(res, statusCode, message, { error: err, stack })
   } else if (status === 'error') {
@@ -13,9 +13,8 @@ const handleDevError = (res, err) => {
 }
 
 const handleProdError = (res, err) => {
-  console.log(err)
   logError(err)
-  const { statusCode, status, message, stack } = err
+  const { statusCode = 500, status = 'error', message } = err
   if (status === 'fail') {
     jSend.fail(res, statusCode, message)
   } else if (status === 'error') {
@@ -29,6 +28,7 @@ const handleProdError = (res, err) => {
 
 // check for errors from packages that we can consider as AppErrors
 const checkForAppError = err => {
+  if (err instanceof AppError) return err
   if (err.name === 'JsonWebTokenError') {
     return new AppError('Invalid token. Please authenticate again.', 401)
   } else if (err.name === 'TokenExpiredError') {
@@ -38,14 +38,8 @@ const checkForAppError = err => {
 }
 
 const handleError = (err, req, res, next) => {
-  const env = process.env.NODE_ENV
-  err.statusCode = err.statusCode || 500
-  err.status = err.status || 'error'
-  if (env !== 'production') return handleDevError(res, err)
-  if (err instanceof AppError) return handleProdError(res, err)
-
+  if (process.env.NODE_ENV === 'development') return handleDevError(res, err)
   let errAfterCheck = checkForAppError(err)
-
   handleProdError(res, errAfterCheck)
 }
 
