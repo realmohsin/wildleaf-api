@@ -30,9 +30,9 @@ const userSchema = new mongoose.Schema(
 userSchema.statics.fieldsForUserCreate = ['email', 'password', 'name', 'photo']
 
 userSchema.statics.findByCredentials = async (email, password) => {
-  const user = await User.findOne({ email }).select('+password')
+  const user = await User.findOne({ email })
   if (!user) throw new AppError('Incorrect email or password')
-  const passwordIsCorrect = await bcrypt.compare(password, user.password)
+  const passwordIsCorrect = await user.checkIfPasswordCorrect(password)
   if (!passwordIsCorrect) throw new AppError('Incorrect email or password', 401)
   return user
 }
@@ -98,6 +98,10 @@ userSchema.methods.clearExpiredSessions = async function () {
   await this.save()
 }
 
+userSchema.methods.checkIfPasswordCorrect = async function (passwordAttempt) {
+  return await bcrypt.compare(passwordAttempt, this.password)
+}
+
 userSchema.methods.changedPasswordAfter = function (thisTimestamp) {
   if (this.passwordChangedAt) {
     const pwChangedTimestamp = parseInt(
@@ -126,6 +130,15 @@ userSchema.methods.clearPasswordResetToken = async function () {
   await this.save()
 }
 
+// called by express when sending json
+userSchema.methods.toJSON = function () {
+  const plainUserObj = this.toObject()
+  delete plainUserObj.password
+  delete plainUserObj.sessions
+  delete plainUserObj.active
+  return plainUserObj
+}
+
 // --------------- Middleware ------------------------------
 
 userSchema.pre('save', async function (next) {
@@ -138,16 +151,11 @@ userSchema.pre('save', async function (next) {
   next()
 })
 
-// // query middleware
-// userSchema.pre(/^find/, function (next) {
-//   // 'this' points to query object
-//   this.find({ active: { $ne: false } })
-//   next()
-// })
-
-// For future refactor
-// setPasswordResetToken
-// clearPasswordResetToken
+userSchema.pre(/^find/, function (next) {
+  // 'this' points to query object
+  this.find({ active: { $ne: false } })
+  next()
+})
 
 const User = mongoose.model('User', userSchema)
 

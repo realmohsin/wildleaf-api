@@ -12,8 +12,8 @@ const userFields = {
   password: {
     type: String,
     required: [true, 'A password must be provided'],
-    minlength: 8,
-    select: false // this field must be requested specifically
+    minlength: 8
+    // select: false // this field must be requested specifically
   },
   name: {
     type: String,
@@ -42,8 +42,8 @@ const userFields = {
   passwordResetExpires: { type: Date },
   active: {
     type: Boolean,
-    default: true,
-    select: false // this field must be requested specifically
+    default: true
+    // select: false // this field must be requested specifically
   }
 }
 

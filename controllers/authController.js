@@ -1,4 +1,3 @@
-const crypto = require('crypto')
 const User = require('../models/User')
 const withCatch = require('../utils/withCatch')
 const jSend = require('../utils/jSend')
@@ -35,25 +34,18 @@ const handleLogOut = withCatch(async (req, res, next) => {
   jSend.success(res, 200, { message: 'Successfully logged out.' })
 })
 
-// change this drastically in refactor - authRoute should handle a lot of whats going on
-// for updating password with prior password
 const updatePassword = withCatch(async (req, res, next) => {
-  // 1) get user with credentials from body
-  const user = await User.findById(req.user.id).select('+password')
-
-  // 2) check if posted current password is correct
-  if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
+  const { user } = req
+  const { currentPassword, newPassword } = req.body
+  const passwordIsCorrect = user.checkIfPasswordCorrect(currentPassword)
+  if (!passwordIsCorrect) {
     return next(new AppError('Password is incorrect.', 401))
   }
-
-  // 3) if so, update password
-  user.password = req.body.password
-  user.passwordConfirm = req.body.passwordConfirm
-  await user.save() // dont use find^ methods since you need to trigger validation and save middleware
-
-  // 4) send jwt
-  const token = signToken(user._id)
-  jSend.success(res, 200, { token })
+  user.password = newPassword
+  await user.save() // use save/create to trigger validation and middleware
+  await User.deleteIncomingSession(req)
+  clearSessionCookie(res)
+  jSend.success(res, 200, { message: 'Password was changed.' })
 })
 
 const sendPasswordResetEmail = withCatch(async (req, res, next) => {

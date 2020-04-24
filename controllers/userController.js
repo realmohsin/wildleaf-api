@@ -25,11 +25,8 @@ const getUser = (req, res) => {
 }
 
 const updateSelf = withCatch(async (req, res, next) => {
-  if (req.body.password || req.body.passwordConfirm) {
-    return next(new AppError('This route is not for password updates.', 400))
-  }
   const updates = filterReqBody(req.body, 'name', 'email')
-  // can use find^ because we DONT want to run password confirm 'save' middleware
+  // can use find^ because we DONT want to run password 'save' middleware
   const updatedUser = await User.findByIdAndUpdate(req.user.id, updates, {
     new: true,
     runValidators: true
