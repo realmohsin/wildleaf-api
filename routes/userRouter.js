@@ -1,5 +1,7 @@
 const express = require('express')
 const isAuth = require('../middleware/isAuth')
+const restrictTo = require('../middleware/restrictTo')
+const setSelf = require('../middleware/users/setSelf')
 const {
   handleSignUp,
   handleLogIn,
@@ -10,8 +12,11 @@ const {
 } = require('../controllers/authController')
 const {
   queryUsers,
+  getUser,
   updateSelf,
-  deleteSelf
+  updateUser,
+  deleteSelf,
+  deleteUser
 } = require('../controllers/userController')
 
 // routes that use authController and/or userController
@@ -19,23 +24,27 @@ const {
 const userRouter = express.Router()
 
 // auth routes
-userRouter.post('/users/signup', handleSignUp)
-userRouter.post('/users/login', handleLogIn)
-userRouter.post('/users/logout', isAuth, handleLogOut)
+userRouter.post('/signup', handleSignUp)
+userRouter.post('/login', handleLogIn)
+userRouter.post('/logout', isAuth, handleLogOut)
 
-userRouter.patch('/users/update-password', isAuth, updatePassword)
+userRouter.patch('/update-password', isAuth, updatePassword)
 
-userRouter.post('/users/request-password-reset', sendPasswordResetEmail)
-userRouter.patch('/users/reset-password/:passwordResetToken', resetPassword)
+userRouter.post('/request-password-reset', sendPasswordResetEmail)
+userRouter.patch('/reset-password/:passwordResetToken', resetPassword)
 
-userRouter.patch('/users/update-self', isAuth, updateSelf)
-userRouter.delete('/users/delete-self', isAuth, deleteSelf)
+userRouter.get('/self', isAuth, setSelf, getUser)
+userRouter.patch('/update-self', isAuth, updateSelf)
+userRouter.delete('/delete-self', isAuth, deleteSelf)
+
+userRouter.use(isAuth) // all rest routes should be protected
+userRouter.use(restrictTo('admin'))
 
 // REST routes
-userRouter.get('/users', queryUsers)
-// userRouter.post('/users')
-// userRouter.get('/users/:id')
-// userRouter.patch('/users/:id')
-// userRouter.delete('/users/:id')
+userRouter.get('/', queryUsers)
+// userRouter.post('/')
+userRouter.get('/:id', getUser)
+userRouter.patch('/:id', updateUser)
+userRouter.delete('/:id', deleteUser)
 
 module.exports = userRouter

@@ -20,6 +20,9 @@ const tourSchema = new mongoose.Schema(
     images: tourFields.images,
     createdAt: tourFields.createdAt,
     startDates: tourFields.startDates,
+    startLocation: tourFields.startLocation,
+    locations: tourFields.locations,
+    guides: tourFields.guides,
     privateTour: tourFields.privateTour
   },
   {
@@ -28,10 +31,19 @@ const tourSchema = new mongoose.Schema(
   }
 )
 
-console.log('typeof tourSchema', typeof tourSchema)
+// ----------- Class Static Properties and Methods -----------------------
+
+tourSchema.statics.resourceName = 'tour'
 
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7
+})
+
+// Virtual Populate
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id'
 })
 
 // DOCUMENT MIDDLEWARE: runs only before .save() and .create()
@@ -42,19 +54,19 @@ tourSchema.pre('save', function (next) {
 })
 
 tourSchema.pre('save', function (next) {
-  log('Saving document...')
+  // log('Saving document...')
   next()
 })
 
 tourSchema.post('save', function (doc, next) {
-  log('Document saved: ', doc)
+  // log('Document saved: ', doc._id)
   next()
 })
 
 // QUERY MIDDLEWARE
 tourSchema.pre(/^find/, function (next) {
   this.find({ privateTour: { $ne: true } })
-  this.select('-privateTour')
+  // this.select('-privateTour')
   this.start = Date.now()
   next()
 })
@@ -62,6 +74,14 @@ tourSchema.pre(/^find/, function (next) {
 tourSchema.post(/^find/, function (docs, next) {
   const executionTime = Date.now() - this.start
   log(`Query took ${executionTime} milliseconds.`)
+  next()
+})
+
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guides',
+    select: 'name'
+  })
   next()
 })
 

@@ -1,3 +1,4 @@
+const mongoose = require('mongoose')
 const validator = require('validator')
 
 const tourFields = {
@@ -76,6 +77,35 @@ const tourFields = {
     select: false
   },
   startDates: [Date],
+  startLocation: {
+    type: {
+      type: String,
+      default: 'Point',
+      enum: ['Point']
+    },
+    coordinates: [Number],
+    address: String,
+    description: String
+  },
+  locations: [
+    {
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point']
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+      day: Number
+    }
+  ],
+  guides: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: 'User'
+    }
+  ],
   privateTour: {
     type: Boolean,
     default: false

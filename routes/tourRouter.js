@@ -1,4 +1,5 @@
 const express = require('express')
+const reviewRouter = require('./reviewRouter')
 const {
   queryTours,
   createTour,
@@ -8,29 +9,31 @@ const {
   getTourStats,
   getMonthlyTourStarts
 } = require('../controllers/tourController')
-const { setTop5Cheapest } = require('../middleware/setToursQuery')
+const { setTop5Cheapest } = require('../middleware/tours/setToursQuery')
 const isAuth = require('../middleware/isAuth')
 const restrictTo = require('../middleware/restrictTo')
 
 const tourRouter = express.Router()
 
+tourRouter.use('/:tourId/reviews', reviewRouter)
+
 // order matters for routes
 
 // custom routes
-tourRouter.get('/tours/top-5-cheap', setTop5Cheapest, queryTours)
-tourRouter.get('/tours/tour-stats', getTourStats)
-tourRouter.get('/tours/monthly-tour-starts/:year', getMonthlyTourStarts)
+tourRouter.get('/top-5-cheap', setTop5Cheapest, queryTours)
+tourRouter.get('/tour-stats', getTourStats)
+tourRouter.get(
+  '/monthly-tour-starts/:year',
+  isAuth,
+  restrictTo('admin', 'lead-guide', 'guide'),
+  getMonthlyTourStarts
+)
 
 // REST routes
-tourRouter.get('/tours', isAuth, queryTours)
-tourRouter.post('/tours', createTour)
-tourRouter.get('/tours/:id', getTour)
-tourRouter.patch('/tours/:id', updateTour)
-tourRouter.delete(
-  '/tours/:id',
-  isAuth,
-  restrictTo('admin', 'lead-guide'),
-  deleteTour
-)
+tourRouter.get('/', queryTours)
+tourRouter.post('/', isAuth, restrictTo('admin', 'lead-guide'), createTour)
+tourRouter.get('/:id', getTour)
+tourRouter.patch('/:id', isAuth, restrictTo('admin', 'lead-guide'), updateTour)
+tourRouter.delete('/:id', isAuth, restrictTo('admin', 'lead-guide'), deleteTour)
 
 module.exports = tourRouter

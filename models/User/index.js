@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema(
 
 // ----------- Class Static Properties and Methods -----------------------
 
+userSchema.statics.resourceName = 'user'
 userSchema.statics.fieldsForUserCreate = ['email', 'password', 'name', 'photo']
 
 userSchema.statics.findByCredentials = async (email, password) => {

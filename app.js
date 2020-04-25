@@ -7,13 +7,17 @@ const stopPollution = require('./middleware/stopPollution')
 const rateLimiter = require('./middleware/rateLimiter')
 const userRouter = require('./routes/userRouter')
 const tourRouter = require('./routes/tourRouter')
+const reviewRouter = require('./routes/reviewRouter')
 const errorController = require('./controllers/errorController')
 const logger = require('./middleware/logger')
 const AppError = require('./utils/AppError')
 
 const app = express()
 
-app.use(logger)
+if (process.env.NODE_ENV === 'development') {
+  app.use(logger)
+}
+
 app.use(helmet())
 app.use(rateLimiter(100, 1000 * 60 * 60))
 
@@ -24,8 +28,9 @@ app.use(stopPollution())
 app.use(xss())
 app.use(mongoSanitize())
 
-app.use('/api/v1', userRouter)
-app.use('/api/v1', tourRouter)
+app.use('/api/v1/users', userRouter)
+app.use('/api/v1/tours', tourRouter)
+app.use('/api/v1/reviews', reviewRouter)
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find path ${req.originalUrl} on this server`, 404))

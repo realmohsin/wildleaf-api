@@ -1,3 +1,9 @@
+const {
+  makeQueryHandler,
+  makeGetOneHandler,
+  makeDeleteOneHandler,
+  makeUpdateOneHandler
+} = require('./crudFactory')
 const withCatch = require('../utils/withCatch')
 const User = require('../models/User')
 const jSend = require('../utils/jSend')
@@ -5,24 +11,17 @@ const QueryBuilder = require('../database/QueryBuilder')
 const AppError = require('../utils/AppError')
 const filterReqBody = require('../utils/filterReqBody')
 
-const queryUsers = withCatch(async (req, res) => {
-  const users = await User.find()
-  jSend.success(res, 200, { users })
-})
-
 const createUser = (req, res) => {
   res.status(500).json({
     status: 'error',
-    message: 'Route not yet defined.'
+    message: 'This route does not work. Use sign up route.'
   })
 }
 
-const getUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'Route not yet defined.'
-  })
-}
+const queryUsers = makeQueryHandler(User)
+const getUser = makeGetOneHandler(User)
+const updateUser = makeUpdateOneHandler(User)
+const deleteUser = makeDeleteOneHandler(User)
 
 const updateSelf = withCatch(async (req, res, next) => {
   const updates = filterReqBody(req.body, 'name', 'email')
@@ -34,24 +33,10 @@ const updateSelf = withCatch(async (req, res, next) => {
   jSend.success(res, 200, { updatedUser })
 })
 
-const updateUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'Route not yet defined.'
-  })
-}
-
 const deleteSelf = withCatch(async (req, res, next) => {
   await User.findByIdAndUpdate(req.user.id, { active: false })
   jSend.success(res, 204, null)
 })
-
-const deleteUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'Route not yet defined.'
-  })
-}
 
 module.exports = {
   queryUsers,
