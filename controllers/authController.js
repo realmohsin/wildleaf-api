@@ -1,4 +1,4 @@
-const User = require('../models/User')
+const User = require('../models/User/User')
 const withCatch = require('../utils/withCatch')
 const jSend = require('../utils/jSend')
 const AppError = require('../utils/AppError')

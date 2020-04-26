@@ -31,6 +31,12 @@ const tourSchema = new mongoose.Schema(
   }
 )
 
+// Indexes
+
+tourSchema.index({ slug: 1 })
+tourSchema.index({ price: 1, ratingsAverage: -1 })
+tourSchema.index({ startLocation: '2dsphere' })
+
 // ----------- Class Static Properties and Methods -----------------------
 
 tourSchema.statics.resourceName = 'tour'
@@ -87,8 +93,8 @@ tourSchema.pre(/^find/, function (next) {
 
 // AGGREGATION MIDDLEWARE
 tourSchema.pre('aggregate', function (next) {
-  this.pipeline().unshift({ $match: { privateTour: { $ne: true } } })
-  log(this.pipeline())
+  // this.pipeline().unshift({ $match: { privateTour: { $ne: true } } })
+  // log(this.pipeline())
   next()
 })
 

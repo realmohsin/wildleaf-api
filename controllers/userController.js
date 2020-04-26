@@ -5,7 +5,7 @@ const {
   makeUpdateOneHandler
 } = require('./crudFactory')
 const withCatch = require('../utils/withCatch')
-const User = require('../models/User')
+const User = require('../models/User/User')
 const jSend = require('../utils/jSend')
 const QueryBuilder = require('../database/QueryBuilder')
 const AppError = require('../utils/AppError')

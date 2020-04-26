@@ -7,7 +7,7 @@ const {
 } = require('./crudFactory')
 const withCatch = require('../utils/withCatch')
 const AppError = require('../utils/AppError')
-const Tour = require('../models/Tour')
+const Tour = require('../models/Tour/Tour')
 const jSend = require('../utils/jSend')
 const {
   tourStatsPipeline,
@@ -34,6 +34,45 @@ const getMonthlyTourStarts = withCatch(async (req, res, next) => {
   jSend.success(res, 200, { tourStartsByMonth })
 })
 
+const getToursWithin = withCatch(async (req, res, next) => {
+  const { distance, latlng, unit } = req.params
+  const [lat, lng] = latlng.split(',')
+  if (!lat || !lng) next(new AppError('Latitude and longitude required', 400))
+  // mongo wants radius in radians - distance divided by radius of earth
+  const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1
+  const tours = await Tour.find({
+    startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } }
+  })
+  jSend.success(res, 200, { count: tours.length, tours })
+})
+
+const getDistancesToTours = withCatch(async (req, res, next) => {
+  const { distance, latlng, unit } = req.params
+  const [lat, lng] = latlng.split(',')
+  if (!lat || !lng) next(new AppError('Latitude and longitude required', 400))
+  const multiplier = unit === 'mi' ? 0.000621371 : 0.001
+  const distances = await Tour.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [+lng, +lat]
+        },
+        distanceField: 'distance',
+        distanceMultiplier: multiplier
+      }
+    },
+    {
+      $project: {
+        distance: 1,
+        name: 1
+      }
+    }
+  ])
+
+  jSend.success(res, 200, { distances })
+})
+
 module.exports = {
   queryTours,
   createTour,
@@ -41,5 +80,7 @@ module.exports = {
   updateTour,
   deleteTour,
   getTourStats,
-  getMonthlyTourStarts
+  getMonthlyTourStarts,
+  getToursWithin,
+  getDistancesToTours
 }

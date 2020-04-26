@@ -1,6 +1,6 @@
 const { promisify } = require('util')
 const jwt = require('jsonwebtoken')
-const User = require('../models/User')
+const User = require('../models/User/User')
 const { log } = require('../utils/consoleLog')
 const AppError = require('../utils/AppError')
 const withCatch = require('../utils/withCatch')

@@ -21,7 +21,7 @@ if (process.env.NODE_ENV === 'development') {
 // const dotenv = require('dotenv')
 // dotenv.config({ path: './config.env' })
 
-const db = require('./database')
+const db = require('./database/database')
 const app = require('./app')
 
 let server

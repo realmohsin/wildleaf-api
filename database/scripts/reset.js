@@ -3,9 +3,10 @@ if (process.env.NODE_ENV === 'development') {
   dotenv.config({ path: './config.env' })
 }
 
-const db = require('../index')
-const User = require('../../models/User')
-const Tour = require('../../models/Tour')
+const db = require('../database')
+const User = require('../../models/User/User')
+const Tour = require('../../models/Tour/Tour')
+const Review = require('../../models/Review/Review')
 const { log, logError } = require('../../utils/consoleLog')
 
 ;(async () => {
@@ -14,5 +15,7 @@ const { log, logError } = require('../../utils/consoleLog')
   log('All users in database deleted')
   await Tour.deleteMany()
   log('All tours in database deleted')
+  await Review.deleteMany()
+  log('All reviews in database deleted')
   process.exit()
 })().catch(logError)

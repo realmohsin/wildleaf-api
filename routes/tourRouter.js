@@ -7,7 +7,9 @@ const {
   updateTour,
   deleteTour,
   getTourStats,
-  getMonthlyTourStarts
+  getMonthlyTourStarts,
+  getToursWithin,
+  getDistancesToTours
 } = require('../controllers/tourController')
 const { setTop5Cheapest } = require('../middleware/tours/setToursQuery')
 const isAuth = require('../middleware/isAuth')
@@ -28,6 +30,11 @@ tourRouter.get(
   restrictTo('admin', 'lead-guide', 'guide'),
   getMonthlyTourStarts
 )
+tourRouter.get(
+  '/tours-within/:distance/center/:latlng/unit/:unit',
+  getToursWithin
+)
+tourRouter.get('/distances/:latlng/unit/:unit', getDistancesToTours)
 
 // REST routes
 tourRouter.get('/', queryTours)

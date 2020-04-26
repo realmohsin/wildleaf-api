@@ -7,7 +7,7 @@ const {
 } = require('./crudFactory')
 const withCatch = require('../utils/withCatch')
 const AppError = require('../utils/AppError')
-const Review = require('../models/Review')
+const Review = require('../models/Review/Review')
 const jSend = require('../utils/jSend')
 const QueryBuilder = require('../database/QueryBuilder')
 

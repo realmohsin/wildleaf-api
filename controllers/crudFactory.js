@@ -17,6 +17,8 @@ const makeQueryHandler = Model =>
       .sort()
       .paginate()
       .limitFields()
+    // for analyzing queries, how many docs were scanned, if indexes are working -
+    // const docs = await queryBuilder.query.explain()
     const docs = await queryBuilder.query
     jSend.success(res, 200, {
       count: docs.length,

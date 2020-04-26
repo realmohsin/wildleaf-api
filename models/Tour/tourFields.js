@@ -36,7 +36,8 @@ const tourFields = {
     default: 3.5,
     // min, max works for dates as well
     min: [1, 'Rating must greater than or equal to 1.0'],
-    max: [5, 'Rating must be less than or equal to 5.0 ']
+    max: [5, 'Rating must be less than or equal to 5.0 '],
+    set: val => Math.round(val * 10) / 10 // rounds to one decimal
   },
   ratingsQuantity: {
     type: Number,
