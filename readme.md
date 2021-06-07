@@ -1,5 +1,5 @@
 <div align="center">
-  <img alt="Logo" src="https://image.flaticon.com/icons/png/512/2861/2861855.png" width="100" />
+  <img alt="Logo" src="https://image.flaticon.com/icons/png/512/1257/1257375.png" width="100" />
 </div>
 <h1 align="center">
   WildLeaf Tours
